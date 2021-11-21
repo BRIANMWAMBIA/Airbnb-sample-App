@@ -1,17 +1,28 @@
-﻿using MongoDB.Driver;
+﻿using System;
+using System.Collections.Generic;
 using MongoDB.Bson;
-using System;
+using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Driver;
+
+
 
 namespace Airbnb_sample
 {
-    class Program
+   public class Program 
     {
         static void Main(string[] args)
         {
-           MongoCrud db = new MongoCrud("sample-airbnb");
-           // db.IdsForListingsInPortugal();
-            db.ListingsWithMoreThanFourBdrooms();
-           Console.ReadLine();
+            MongoCrud db = new MongoCrud("sample-airbnb");
+          var recs= db.IdsForListingsInPortugal();
+           foreach(var rec in recs) 
+            {
+                Console.WriteLine(rec);
+            }
+           
+            
+         // db.ListingsWithMoreThanFourBdrooms();
+           // db.DocumentsCount();
+            //Console.WriteLine("hello world");
         }
     }
     public class MongoCrud
@@ -25,42 +36,44 @@ namespace Airbnb_sample
         public void getAttributesOfTheListings () {
             var collection = db.GetCollection<BsonDocument>("listingsAndReviews");
         }
-        public void DocumentsCount()
+        public long DocumentsCount()
         {
             var collection = db.GetCollection<BsonDocument>("listingsAndReviews");
          var count= collection.EstimatedDocumentCount();
-            Console.WriteLine(count);
+            return count;
         }
-        public void ListingWithPropertyTypeHouse()
+        public  IEnumerable<BsonDocument> ListingWithPropertyTypeHouse()
         {
             var collection = db.GetCollection<BsonDocument>("listingsAndReviews");
             var filter = Builders<BsonDocument>.Filter.Gt("bedrooms", 4);
             var results = collection.Find(filter).ToList();
-            Console.WriteLine(results);
+            return results;
+            
         }
-       public void ListingsWithMoreThanFourBdrooms() 
+       public IEnumerable<BsonDocument> ListingsWithMoreThanFourBdrooms() 
         {
             var collection = db.GetCollection<BsonDocument>("listingsAndReviews");
             var filter = Builders<BsonDocument>.Filter.Gt("bedrooms", 4);
             var results = collection.Find(filter).ToList();
-            Console.WriteLine(results);
+            return results;
         }
-       public void ListingsInPortugal() 
+       public IEnumerable<BsonDocument> ListingsInPortugal() 
         {
             var collection = db.GetCollection<BsonDocument>("listingsAndReviews");
-          var filter = Builders<BsonDocument>.Filter.Eq("address.street", "porto,porto,portugal");
+          var filter = Builders<BsonDocument>.Filter.Eq("address.country", "portugal");
             var results = collection.Find(filter).ToList();
-            Console.WriteLine(results);
+            return results;
 
         }
-        public void IdsForListingsInPortugal () 
+        public IEnumerable<BsonDocument> IdsForListingsInPortugal () 
         {
             var collection = db.GetCollection<BsonDocument>("listingsAndReviews");
-            var filter = Builders<BsonDocument>.Filter.Lt("address.street", "porto,porto,portugal");
+            var filter = Builders<BsonDocument>.Filter.Lt("address.country", "portugal");
             var projection = Builders<BsonDocument>.Projection.Include("_id");
-            var result = collection.Find(filter).Project(projection).ToList();
-            Console.WriteLine(result);
+            var results = collection.Find(filter).Project(projection).ToList();
+            return results;
         }
         
     }
+   
 }
